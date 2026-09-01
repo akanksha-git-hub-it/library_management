@@ -1,0 +1,16 @@
+{
+  "name": "smart-library-management",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart Library Management System with MongoDB Atlas persistence.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "seed": "node seed-mongodb.js",
+    "check": "node --check server.js && node --check app.js && node --check database.js && node --check seed-mongodb.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.21.0"
+  }
+}

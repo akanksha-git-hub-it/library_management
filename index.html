@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Library Management System</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <script src="database.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+  <main id="login-screen" class="login-screen">
+    <section class="login-panel">
+      <div class="login-brand">
+        <span class="brand-mark"><i data-lucide="book-open-check"></i></span>
+        <div>
+          <p class="eyebrow">Library Portal</p>
+          <h1>Smart Library</h1>
+        </div>
+      </div>
+
+      <div class="auth-tabs" role="tablist" aria-label="Authentication">
+        <button class="auth-tab active" type="button" data-auth-tab="login">Login</button>
+        <button class="auth-tab" type="button" data-auth-tab="signup">Sign In</button>
+      </div>
+
+      <form id="login-form" class="login-form auth-form" autocomplete="off">
+        <label for="login-username">Username</label>
+        <input id="login-username" name="username" type="text" placeholder="Username" required>
+
+        <label for="login-password">Password</label>
+        <input id="login-password" name="password" type="password" placeholder="Password" required>
+
+        <button class="primary-action full-width" type="submit">
+          <i data-lucide="log-in"></i>
+          <span>Login</span>
+        </button>
+        <p id="login-error" class="form-note error-note" role="alert"></p>
+      </form>
+
+      <form id="signup-form" class="login-form auth-form hidden" autocomplete="off">
+        <label for="signup-name">Full Name</label>
+        <input id="signup-name" type="text" required autocomplete="off">
+
+        <label for="signup-registration">Registration No</label>
+        <input id="signup-registration" type="text" required autocomplete="off">
+
+        <div class="split-fields">
+          <label for="signup-department">Department
+            <input id="signup-department" type="text" required autocomplete="off">
+          </label>
+          <label for="signup-semester">Semester
+            <input id="signup-semester" type="number" min="1" max="12">
+          </label>
+        </div>
+
+        <label for="signup-email">Email</label>
+        <input id="signup-email" type="email" autocomplete="off">
+
+        <label for="signup-phone">Phone</label>
+        <input id="signup-phone" type="tel" autocomplete="off">
+
+        <div class="split-fields">
+          <label for="signup-username">Username
+            <input id="signup-username" type="text" required autocomplete="off">
+          </label>
+          <label for="signup-password">Password
+            <input id="signup-password" type="password" required>
+          </label>
+        </div>
+
+        <button class="primary-action full-width" type="submit">
+          <i data-lucide="user-plus"></i>
+          <span>Create Student Account</span>
+        </button>
+        <p id="signup-error" class="form-note error-note" role="alert"></p>
+      </form>
+
+      <div class="login-summary">
+        <div>
+          <strong>Database</strong>
+          <span>MongoDB Atlas</span>
+        </div>
+        <div>
+          <strong>Records</strong>
+          <span>Loaded from MongoDB</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="app-shell" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-mark"><i data-lucide="library-big"></i></span>
+        <div>
+          <strong id="sidebar-org-name">Smart Library</strong>
+          <span id="sidebar-role-label">Library Console</span>
+        </div>
+      </div>
+
+      <nav class="nav-list" aria-label="Main navigation">
+        <button class="nav-item active" type="button" data-view="dashboard">
+          <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+        </button>
+        <button class="nav-item" type="button" data-view="books">
+          <i data-lucide="book-open"></i><span>Books</span>
+        </button>
+        <button class="nav-item" type="button" data-view="members" data-admin-only>
+          <i data-lucide="users-round"></i><span>Members</span>
+        </button>
+        <button class="nav-item" type="button" data-view="issue" data-admin-only>
+          <i data-lucide="arrow-up-right"></i><span>Issue Book</span>
+        </button>
+        <button class="nav-item" type="button" data-view="return">
+          <i data-lucide="rotate-ccw"></i><span>Return Book</span>
+        </button>
+        <button class="nav-item" type="button" data-view="transactions" data-admin-only>
+          <i data-lucide="receipt-text"></i><span>Transactions</span>
+        </button>
+        <button class="nav-item" type="button" data-view="reports" data-admin-only>
+          <i data-lucide="chart-column"></i><span>Reports</span>
+        </button>
+        <button class="nav-item" type="button" data-view="settings">
+          <i data-lucide="settings"></i><span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <span id="active-user-avatar" class="avatar">A</span>
+          <div>
+            <strong id="active-user-label">Admin</strong>
+            <span id="active-user-role">Signed in</span>
+          </div>
+        </div>
+        <button id="logout-button" class="ghost-action full-width" type="button">
+          <i data-lucide="log-out"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <button id="menu-toggle" class="icon-button mobile-only" type="button" aria-label="Open menu" title="Open menu">
+          <i data-lucide="menu"></i>
+        </button>
+        <div>
+          <p id="current-date" class="eyebrow"></p>
+          <h2 id="view-title">Dashboard</h2>
+          <p id="view-subtitle" class="subtle">Library overview and activity</p>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="view-dashboard" class="view active-view">
+          <div id="dashboard-stats" class="stats-grid"></div>
+
+          <div class="layout-grid two-columns">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h3 id="dashboard-table-title">Recent Transactions</h3>
+                  <p id="dashboard-table-subtitle">Latest issue and return activity</p>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Transaction</th>
+                      <th>Member</th>
+                      <th>Book</th>
+                      <th>Due Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-transactions-body"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h3 id="dashboard-chart-title">Category Mix</h3>
+                  <p id="dashboard-chart-subtitle">Book copies by category</p>
+                </div>
+              </div>
+              <div id="dashboard-category-chart" class="bar-chart"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-books" class="view">
+          <div class="toolbar">
+            <label class="search-field">
+              <i data-lucide="search"></i>
+              <input id="book-search" type="search" placeholder="Search books">
+            </label>
+            <select id="book-category-filter" aria-label="Filter books by category">
+              <option value="">All categories</option>
+            </select>
+            <select id="book-availability-filter" aria-label="Filter books by availability">
+              <option value="">All availability</option>
+              <option value="available">Available</option>
+              <option value="out">Out of stock</option>
+            </select>
+          </div>
+
+          <section class="panel form-panel" data-admin-only>
+            <div class="panel-heading">
+              <div>
+                <h3 id="book-form-title">Add Book</h3>
+                <p>Maintain catalog records and stock counts</p>
+              </div>
+              <button id="cancel-book-edit" class="ghost-action hidden" type="button">
+                <i data-lucide="x"></i><span>Cancel Edit</span>
+              </button>
+            </div>
+            <form id="book-form" class="grid-form">
+              <input type="hidden" id="book-edit-id">
+              <label>Book ID<input id="book-id" type="text" placeholder="Auto" autocomplete="off"></label>
+              <label>ISBN<input id="book-isbn" type="text" required autocomplete="off"></label>
+              <label>Title<input id="book-title" type="text" required autocomplete="off"></label>
+              <label>Author<input id="book-author" type="text" required autocomplete="off"></label>
+              <label>Category<input id="book-category" type="text" required autocomplete="off"></label>
+              <label>Publisher<input id="book-publisher" type="text" autocomplete="off"></label>
+              <label>Year<input id="book-year" type="number" min="1800" max="2100" required></label>
+              <label>Quantity<input id="book-quantity" type="number" min="1" required></label>
+              <label>Available<input id="book-available" type="number" min="0" required></label>
+              <label>Shelf<input id="book-shelf" type="text" autocomplete="off"></label>
+              <div class="form-actions">
+                <button class="primary-action" type="submit">
+                  <i data-lucide="save"></i><span>Save Book</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Book Records</h3>
+                <p id="book-count-label"></p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Category</th>
+                    <th>Qty</th>
+                    <th>Available</th>
+                    <th>Shelf</th>
+                    <th>Status</th>
+                    <th data-admin-only>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="books-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-members" class="view" data-admin-only>
+          <div class="toolbar">
+            <label class="search-field">
+              <i data-lucide="search"></i>
+              <input id="member-search" type="search" placeholder="Search members">
+            </label>
+            <select id="member-status-filter" aria-label="Filter members by status">
+              <option value="">All statuses</option>
+              <option value="Active">Active</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+          </div>
+
+          <section class="panel form-panel">
+            <div class="panel-heading">
+              <div>
+                <h3 id="member-form-title">Add Member</h3>
+                <p>Maintain student or member profiles</p>
+              </div>
+              <button id="cancel-member-edit" class="ghost-action hidden" type="button">
+                <i data-lucide="x"></i><span>Cancel Edit</span>
+              </button>
+            </div>
+            <form id="member-form" class="grid-form">
+              <input type="hidden" id="member-edit-id">
+              <label>Member ID<input id="member-id" type="text" placeholder="Auto" autocomplete="off"></label>
+              <label>Name<input id="member-name" type="text" required autocomplete="off"></label>
+              <label>Registration No<input id="member-registration" type="text" required autocomplete="off"></label>
+              <label>Email<input id="member-email" type="email" autocomplete="off"></label>
+              <label>Phone<input id="member-phone" type="tel" autocomplete="off"></label>
+              <label>Department<input id="member-department" type="text" autocomplete="off"></label>
+              <label>Semester<input id="member-semester" type="number" min="1" max="12"></label>
+              <label>Address<input id="member-address" type="text" autocomplete="off"></label>
+              <label>Join Date<input id="member-join-date" type="date" required></label>
+              <label>Status
+                <select id="member-status">
+                  <option>Active</option>
+                  <option>Blocked</option>
+                </select>
+              </label>
+              <div class="form-actions">
+                <button class="primary-action" type="submit">
+                  <i data-lucide="save"></i><span>Save Member</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Member Records</h3>
+                <p id="member-count-label"></p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Registration</th>
+                    <th>Department</th>
+                    <th>Semester</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="members-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-issue" class="view" data-admin-only>
+          <section class="panel form-panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Issue Book</h3>
+                <p>Create a new borrowing transaction</p>
+              </div>
+            </div>
+            <form id="issue-form" class="grid-form">
+              <label>Member<select id="issue-member" required></select></label>
+              <label>Book<select id="issue-book" required></select></label>
+              <label>Issue Date<input id="issue-date" type="date" required></label>
+              <label>Due Date<input id="due-date" type="date" required></label>
+              <div class="form-actions">
+                <button class="primary-action" type="submit">
+                  <i data-lucide="arrow-up-right"></i><span>Issue Book</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Available Books</h3>
+                <p>Books ready for issue</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Available</th>
+                    <th>Shelf</th>
+                  </tr>
+                </thead>
+                <tbody id="issue-available-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-return" class="view">
+          <section class="panel form-panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Return Book</h3>
+                <p>Close issued transactions and calculate fines</p>
+              </div>
+            </div>
+            <form id="return-form" class="grid-form">
+              <label>Issued Transaction<select id="return-transaction" required></select></label>
+              <label>Return Date<input id="return-date" type="date" required></label>
+              <label class="checkbox-label" data-admin-only>
+                <input id="fine-paid" type="checkbox">
+                <span>Fine paid</span>
+              </label>
+              <div id="return-preview" class="return-preview"></div>
+              <div class="form-actions">
+                <button class="primary-action" type="submit">
+                  <i data-lucide="rotate-ccw"></i><span>Return Book</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h3 id="open-transactions-title">Currently Issued</h3>
+                <p id="open-transactions-subtitle">Open transactions</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Transaction</th>
+                    <th>Member</th>
+                    <th>Book</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="open-transactions-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-transactions" class="view" data-admin-only>
+          <div class="toolbar">
+            <label class="search-field">
+              <i data-lucide="search"></i>
+              <input id="transaction-search" type="search" placeholder="Search transactions">
+            </label>
+            <select id="transaction-status-filter" aria-label="Filter transactions by status">
+              <option value="">All statuses</option>
+              <option value="Issued">Issued</option>
+              <option value="Returned">Returned</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </div>
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Transaction History</h3>
+                <p id="transaction-count-label"></p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Member</th>
+                    <th>Book</th>
+                    <th>Issue</th>
+                    <th>Due</th>
+                    <th>Return</th>
+                    <th>Fine</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-reports" class="view" data-admin-only>
+          <div id="report-stats" class="stats-grid"></div>
+          <div class="layout-grid two-columns">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h3>Books By Category</h3>
+                  <p>Copy distribution</p>
+                </div>
+              </div>
+              <div id="report-category-chart" class="bar-chart"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h3>Transactions By Month</h3>
+                  <p>Issue activity</p>
+                </div>
+              </div>
+              <div id="report-month-chart" class="bar-chart"></div>
+            </section>
+          </div>
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <h3>Overdue Report</h3>
+                <p>Issued books past due date</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Transaction</th>
+                    <th>Member</th>
+                    <th>Book</th>
+                    <th>Due Date</th>
+                    <th>Late Days</th>
+                    <th>Estimated Fine</th>
+                  </tr>
+                </thead>
+                <tbody id="overdue-report-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-settings" class="view">
+          <section class="panel form-panel" data-admin-only>
+            <div class="panel-heading">
+              <div>
+                <h3>Admin Settings</h3>
+                <p>Fine rules, default loan duration, and access details</p>
+              </div>
+            </div>
+            <form id="settings-form" class="grid-form">
+              <label>Library Name<input id="setting-library-name" type="text" required></label>
+              <label>Fine Rate Per Day<input id="setting-fine-rate" type="number" min="0" step="1" required></label>
+              <label>Default Loan Days<input id="setting-loan-days" type="number" min="1" max="90" required></label>
+              <label>Admin Username<input id="setting-username" type="text" required></label>
+              <label>New Password<input id="setting-password" type="password" placeholder="Leave blank to keep current"></label>
+              <div class="form-actions">
+                <button class="primary-action" type="submit">
+                  <i data-lucide="save"></i><span>Save Settings</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel form-panel" data-student-only>
+            <div class="panel-heading">
+              <div>
+                <h3>Student Settings</h3>
+                <p>Profile and password details</p>
+              </div>
+            </div>
+            <form id="student-settings-form" class="grid-form">
+              <label>Name<input id="student-setting-name" type="text" required autocomplete="off"></label>
+              <label>Email<input id="student-setting-email" type="email" autocomplete="off"></label>
+              <label>Phone<input id="student-setting-phone" type="tel" autocomplete="off"></label>
+              <label>Department<input id="student-setting-department" type="text" autocomplete="off"></label>
+              <label>Semester<input id="student-setting-semester" type="number" min="1" max="12"></label>
+              <label>New Password<input id="student-setting-password" type="password" placeholder="Leave blank to keep current"></label>
+              <div class="form-actions">
+                <button class="primary-action" type="submit">
+                  <i data-lucide="save"></i><span>Save Profile</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel" data-admin-only>
+            <div class="panel-heading">
+              <div>
+                <h3>Data Tools</h3>
+                <p>Export, import, or clear MongoDB data</p>
+              </div>
+            </div>
+            <div class="data-tools">
+              <button id="export-data" class="ghost-action" type="button">
+                <i data-lucide="download"></i><span>Export JSON</span>
+              </button>
+              <label class="ghost-action file-action">
+                <i data-lucide="upload"></i><span>Import JSON</span>
+                <input id="import-data" type="file" accept="application/json">
+              </label>
+              <button id="clear-data" class="danger-action" type="button">
+                <i data-lucide="trash-2"></i><span>Clear Library</span>
+              </button>
+            </div>
+          </section>
+        </section>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

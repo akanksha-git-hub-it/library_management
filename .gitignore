@@ -1,0 +1,9 @@
+node_modules/
+npm-debug.log*
+
+# Local environment and credential files
+.env
+.env.*
+*.env
+!*.env.example
+atlas-credentials.env
