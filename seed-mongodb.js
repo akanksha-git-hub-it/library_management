@@ -3,7 +3,7 @@ const path = require("path");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const ROOT_DIR = __dirname;
-const ENV_FILE = process.env.ATLAS_ENV_FILE || path.join(ROOT_DIR, ".env");
+const ENV_FILE = process.env.ATLAS_ENV_FILE || path.join(__dirname, ".env");
 const STATE_ID = "main";
 
 loadEnvironmentFile(ENV_FILE);

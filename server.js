@@ -4,7 +4,9 @@ const path = require("path");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const ROOT_DIR = path.join(__dirname, "public");
-const ENV_FILE = process.env.ATLAS_ENV_FILE || path.join(ROOT_DIR, ".env");
+// Keep credentials at the project root, alongside .env.example, rather than
+// inside the publicly served directory.
+const ENV_FILE = process.env.ATLAS_ENV_FILE || path.join(__dirname, ".env");
 const STATE_ID = "main";
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 const STATIC_FILES = new Set(["index.html", "app.js", "database.js", "styles.css"]);

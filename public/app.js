@@ -1418,11 +1418,13 @@ function initials(name) {
 
 function setSessionUser(user) {
   sessionStorage.setItem(SESSION_KEY, user.username);
-  localStorage.setItem(SESSION_KEY, user.username);
 }
 
 function getSessionUser() {
-  const username = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
+  // Use sessionStorage so a previous browser session never bypasses the login screen.
+  // Remove the legacy persistent session key left by earlier versions of the app.
+  localStorage.removeItem(SESSION_KEY);
+  const username = sessionStorage.getItem(SESSION_KEY);
   if (!username) return null;
   return state.users.find((user) => user.username === username && canUserSignIn(user)) || null;
 }
