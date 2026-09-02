@@ -3,7 +3,7 @@ const http = require("http");
 const path = require("path");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
-const ROOT_DIR = __dirname;
+const ROOT_DIR = path.join(__dirname, "public");
 const ENV_FILE = process.env.ATLAS_ENV_FILE || path.join(ROOT_DIR, ".env");
 const STATE_ID = "main";
 const MAX_BODY_BYTES = 2 * 1024 * 1024;

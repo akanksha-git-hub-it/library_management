@@ -4,10 +4,10 @@ A Library Management System built with HTML, CSS, JavaScript, Node.js, and Mongo
 
 ## Files
 
-* `index.html` - Login/sign-up screens, admin dashboard, student dashboard, and module markup
-* `styles.css` - Responsive UI styling
-* `app.js` - Library management logic, role-based screens, validation, reports, and exports
-* `database.js` - Browser client for the Node API
+* `public/index.html` - Login/sign-up screens, admin dashboard, student dashboard, and module markup
+* `public/styles.css` - Responsive UI styling
+* `public/app.js` - Library management logic, role-based screens, validation, reports, and exports
+* `public/database.js` - Browser client for the Node API
 * `server.js` - Static file server and MongoDB persistence API
 * `database.sql` - Relational database schema reference
 
