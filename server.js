@@ -303,6 +303,22 @@ async function handleRequest(request, response) {
   serveStaticFile(request, response, requestUrl.pathname);
 }
 
+async function requestHandler(request, response) {
+  try {
+    await handleRequest(request, response);
+  } catch (error) {
+    if (error.publicMessage) {
+      console.warn(error.publicMessage);
+    } else {
+      console.error(error);
+    }
+
+    const statusCode = error.statusCode || 500;
+    const message = error.publicMessage || (statusCode >= 500 ? "Server error." : error.message || "Request failed.");
+    sendJson(response, statusCode, { error: message });
+  }
+}
+
 function listenWithPortFallback(server, preferredPort) {
   const maxAttempts = 10;
 
@@ -348,28 +364,21 @@ async function start() {
     }
   }
 
-  const server = http.createServer((request, response) => {
-    handleRequest(request, response).catch((error) => {
-      if (error.publicMessage) {
-        console.warn(error.publicMessage);
-      } else {
-        console.error(error);
-      }
-      const statusCode = error.statusCode || 500;
-      const message = error.publicMessage || (statusCode >= 500 ? "Server error." : error.message || "Request failed.");
-      sendJson(response, statusCode, { error: message });
-    });
-  });
+  const server = http.createServer(requestHandler);
 
   const actualPort = await listenWithPortFallback(server, PORT);
   console.log(`Library app running at http://localhost:${actualPort}`);
 }
 
-process.on("SIGINT", async () => {
-  if (client) {
-    await client.close();
-  }
-  process.exit(0);
-});
+module.exports = requestHandler;
 
-start();
+if (require.main === module) {
+  process.on("SIGINT", async () => {
+    if (client) {
+      await client.close();
+    }
+    process.exit(0);
+  });
+
+  start();
+}

@@ -59,6 +59,23 @@ MongoDB health can be checked at:
 http://localhost:8000/api/health
 ```
 
+## Deploy on Vercel
+
+The project includes a Vercel serverless entry point in `api/index.js`. In the
+Vercel project settings, add these environment variables (using your real Atlas
+values) before deploying:
+
+```text
+MONGODB_URI
+MONGODB_DB_NAME
+MONGODB_COLLECTION
+```
+
+If your URI still contains `<db_username>` or `<db_password>`, also add
+`MONGODB_USERNAME` and `MONGODB_PASSWORD`. In MongoDB Atlas, allow Vercel to
+reach the cluster (temporarily `0.0.0.0/0`, or restrict it to Vercel's current
+outbound IP ranges) and ensure the database user has read/write access.
+
 ## Default Login
 
 * Username: `Akanksha`
